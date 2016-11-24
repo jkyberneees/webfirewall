@@ -77,9 +77,9 @@ module.exports = (config) => {
 
     return function (req, res, next) {
         co(function* () {
-            let getUserEmail = config.getUserEmail || Promise.resolve(req.user ? req.user.email : null);
-            let getUserPhone = config.getUserPhone || Promise.resolve(req.user ? req.user.phone : null);
-            let getUserRoles = config.getUserRoles || Promise.resolve(req.user ? req.user.roles : null);
+            let getUserEmail = config.getUserEmail || ((req) => Promise.resolve(req.user ? req.user.email : null));
+            let getUserPhone = config.getUserPhone || ((req) => Promise.resolve(req.user ? req.user.phone : null));
+            let getUserRoles = config.getUserRoles || ((req) => Promise.resolve(req.user ? req.user.roles : null));
 
             let method = strategy.getMethod(req, res);
             let path = strategy.getPath(req, res);
