@@ -96,7 +96,7 @@ module.exports = (config) => {
                         rule.ipAddresses.find((e) => compare(e, ipAddress)) &&
                         (!rule.users || rule.users.find((e) => compare(e, email)) || rule.users.find((e) => compare(e, phone))) &&
                         (!rule.roles || roleschk(roles, rule.roles)) &&
-                        secure == rule.secure &&
+                        (undefined === rule.secure || secure == rule.secure) &&
                         (yield rule.handler(req))) {
                         switch (rule.action.toUpperCase()) {
                             case 'ACCEPT':
