@@ -21,7 +21,7 @@ const config = {
         roles: ['*'], // optional
         origin: ['*'], // optional
         users: ['*'], // optional
-        secure: true, // optional, default: false
+        secure: true, // optional
         action: 'ACCEPT', // supported values: ACCEPT/DROP
         handler: (req) => Promise.resolve(true) // optional
     }, {
