@@ -74,12 +74,13 @@ module.exports = (config) => {
         rule.handler = rule.handler || emptyfn;
     }
     let strategy = PopulationStrategies[config.populationStrategy] || PopulationStrategies['restify'];
-    let getUserEmail = config.getUserEmail || Promise.resolve(req.user ? req.user.email : null);
-    let getUserPhone = config.getUserPhone || Promise.resolve(req.user ? req.user.phone : null);
-    let getUserRoles = config.getUserRoles || Promise.resolve(req.user ? req.user.roles : null);
 
     return function (req, res, next) {
         co(function* () {
+            let getUserEmail = config.getUserEmail || Promise.resolve(req.user ? req.user.email : null);
+            let getUserPhone = config.getUserPhone || Promise.resolve(req.user ? req.user.phone : null);
+            let getUserRoles = config.getUserRoles || Promise.resolve(req.user ? req.user.roles : null);
+
             let method = strategy.getMethod(req, res);
             let path = strategy.getPath(req, res);
             let secure = strategy.isSecure(req, res);
