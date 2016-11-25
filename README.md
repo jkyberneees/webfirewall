@@ -7,6 +7,7 @@ npm install --save webfirewall
 ```
 
 # Config params example
+The values on the params 'paths', 'ipAddresses', 'roles', 'origin' and 'users', can be regular expressions (RegExp). If strings, the comparison is done using the [wildcard](https://www.npmjs.com/package/wildcard) module. 
 ```js
 const config = {
     populationStrategy: 'restify', // supported values: express/restify
