@@ -104,8 +104,8 @@ module.exports = (config) => {
                                 next();
                                 break;
                             case 'DROP':
-                                let err = new Error();
-                                err.status = 401;
+                                let err = new Error('Forbidden');
+                                err.status = 403;
                                 next(err);
                                 break;
                         }
@@ -120,8 +120,8 @@ module.exports = (config) => {
                     next();
                     break;
                 case 'DROP':
-                    let err = new Error();
-                    err.status = 401;
+                    let err = new Error('Forbidden');
+                    err.status = 403;
                     next(err);
                     break;
             }
