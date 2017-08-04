@@ -61,7 +61,7 @@ function roleschk(uroles, rroles) {
 }
 
 function emptyfn() {
-    return true;
+    return Promise.resolve(true);
 }
 
 module.exports = (config) => {
