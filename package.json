@@ -1,6 +1,6 @@
 {
   "name": "webfirewall",
-  "version": "0.2.1",
+  "version": "1.0.0",
   "description": "Web firewall compatible with Express/Restify",
   "main": "index.js",
   "scripts": {
@@ -24,5 +24,8 @@
   "dependencies": {
     "co": "^4.6.0",
     "wildcard": "^1.1.2"
+  },
+  "devDependencies": {
+    "standard": "^11.0.1"
   }
 }
