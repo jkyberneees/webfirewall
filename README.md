@@ -10,7 +10,7 @@ npm install --save webfirewall
 The values on the params 'paths', 'ipAddresses', 'roles', 'origin' and 'users', can be regular expressions (RegExp). If strings, the comparison is done using the [wildcard](https://www.npmjs.com/package/wildcard) module. 
 ```js
 const config = {
-    populationStrategy: 'restify', // supported values: express/restify
+    populationStrategy: 'restify', // supported values: express/restify or object
     defaultAction: 'DROP', // supported values: ACCEPT/DROP 
     getUserPhone: (req) => Promise.resolve(req.user ? req.user.phone: null), // custom population strategy for user phone (optional)
     getUserEmail: (req) => Promise.resolve(req.user ? req.user.email: null), // custom population strategy for user email (optional)
@@ -56,8 +56,7 @@ server.use(firewall({
     rules: []
 }));
 
-
 ```
+
 # JWT authentication
 JSON Web Token authentication is a great candidate to be used in collaboration with this module.
-This module is fully integrated with the [com.kyberneees.auth.jwt](https://github.com/jkyberneees/com.kyberneees.auth.jwt) module.
