@@ -1,8 +1,12 @@
+'use strict'
+
 const wildcard = require('wildcard')
-const co = require('co')
+
+const E403 = new Error('Forbidden')
+E403.status = 403
 
 const PopulationStrategies = {
-  'express': {
+  express: {
     getMethod: (req, res) => {
       return req.method
     },
@@ -19,7 +23,7 @@ const PopulationStrategies = {
       return req.ip
     }
   },
-  'restify': {
+  restify: {
     getMethod: (req, res) => {
       return req.method
     },
@@ -30,7 +34,7 @@ const PopulationStrategies = {
       return req.isSecure()
     },
     getOrigin: (req, res) => {
-      return req.headers['origin'] || ''
+      return req.headers.origin || ''
     },
     getIpAddress: (req, res) => {
       return req.headers['x-forwarded-for'] || req.connection.remoteAddress
@@ -38,22 +42,22 @@ const PopulationStrategies = {
   }
 }
 
-function compare (pattern, s) {
-  if (typeof (s) !== 'string') return false
+function compare (pattern, str) {
+  if (typeof (str) !== 'string') return false
 
   if (pattern instanceof RegExp) {
-    return s.match(pattern)
+    return str.match(pattern)
   }
 
-  return wildcard(pattern, s)
+  return wildcard(pattern, str)
 }
 
-function roleschk (uroles, rroles) {
-  if (uroles.length === 0) return rroles.indexOf('*') >= 0
+function roleschk (userRoles, ruleRoles) {
+  if (userRoles.length === 0) return ruleRoles.indexOf('*') >= 0
 
-  for (let i = 0; i < rroles.length; i++) {
-    for (let z = 0; z < uroles.length; z++) {
-      if (compare(rroles[i], uroles[z])) return true
+  for (let i = 0; i < ruleRoles.length; i++) {
+    for (let j = 0; j < userRoles.length; j++) {
+      if (compare(ruleRoles[i], userRoles[j])) return true
     }
   }
 
@@ -66,65 +70,69 @@ function emptyfn () {
 
 module.exports = (config) => {
   config.defaultAction = (config.defaultAction || 'DROP').toUpperCase()
-  for (let rule of config.rules) {
+
+  for (const rule of config.rules) {
     rule.origin = rule.origin || ['*']
     rule.methods = rule.methods || ['*']
     rule.ipAddresses = rule.ipAddresses || ['*']
     rule.secure = (rule.secure === true)
     rule.handler = rule.handler || emptyfn
   }
-  let strategy = PopulationStrategies[config.populationStrategy] || PopulationStrategies['restify']
 
-  return function (req, res, next) {
-    co(function * () {
-      let getUserEmail = config.getUserEmail || ((req) => Promise.resolve(req.user ? req.user.email : null))
-      let getUserPhone = config.getUserPhone || ((req) => Promise.resolve(req.user ? req.user.phone : null))
-      let getUserRoles = config.getUserRoles || ((req) => Promise.resolve(req.user ? req.user.roles : null))
+  let strategy = PopulationStrategies.restify
+  if (typeof config.populationStrategy === 'string') {
+    strategy = PopulationStrategies[config.populationStrategy]
+  } else if (typeof config.populationStrategy === 'object') {
+    strategy = config.populationStrategy
+  }
+  if (!strategy) {
+    throw new Error('Given population strategy is not supported!')
+  }
 
-      let method = strategy.getMethod(req, res)
-      let path = strategy.getPath(req, res)
-      let secure = strategy.isSecure(req, res)
-      let origin = strategy.getOrigin(req, res)
-      let ipAddress = strategy.getIpAddress(req, res)
-      let email = yield getUserEmail(req)
-      let phone = yield getUserPhone(req)
-      let roles = yield getUserRoles(req)
+  return async function (req, res, next) {
+    try {
+      const getUserEmail = config.getUserEmail || ((req) => Promise.resolve(req.user ? req.user.email : null))
+      const getUserPhone = config.getUserPhone || ((req) => Promise.resolve(req.user ? req.user.phone : null))
+      const getUserRoles = config.getUserRoles || ((req) => Promise.resolve(req.user ? req.user.roles : null))
 
-      for (let rule of config.rules) {
+      const method = strategy.getMethod(req, res)
+      const path = strategy.getPath(req, res)
+      const secure = strategy.isSecure(req, res)
+      const origin = strategy.getOrigin(req, res)
+      const ipAddress = strategy.getIpAddress(req, res)
+      const email = await getUserEmail(req)
+      const phone = await getUserPhone(req)
+      const roles = await getUserRoles(req)
+
+      for (const rule of config.rules) {
         if (rule.paths.find((e) => compare(e, path))) {
-          if (rule.methods.find((e) => compare(e.toUpperCase(), method)) &&
-                        rule.origin.find((e) => compare(e, origin)) &&
-                        rule.ipAddresses.find((e) => compare(e, ipAddress)) &&
-                        (!rule.users || rule.users.find((e) => compare(e, email)) || rule.users.find((e) => compare(e, phone))) &&
-                        (!rule.roles || roleschk(roles, rule.roles)) &&
-                        (undefined === rule.secure || secure === rule.secure) &&
-                        (yield rule.handler(req))) {
+          if (
+            rule.methods.find((e) => compare(e.toUpperCase(), method)) &&
+            rule.origin.find((e) => compare(e, origin)) &&
+            rule.ipAddresses.find((e) => compare(e, ipAddress)) &&
+            (!rule.users || rule.users.find((e) => compare(e, email)) || rule.users.find((e) => compare(e, phone))) &&
+            (!rule.roles || roleschk(roles, rule.roles)) &&
+            (undefined === rule.secure || secure === rule.secure) &&
+            (await rule.handler(req))
+          ) {
             switch (rule.action.toUpperCase()) {
               case 'ACCEPT':
-                next()
-                break
-              case 'DROP':
-                let err = new Error('Forbidden')
-                err.status = 403
-                next(err)
-                break
+                return next()
+              default: // case 'DROP':
+                return next(E403)
             }
-
-            return
           }
         }
       }
 
       switch (config.defaultAction) {
         case 'ACCEPT':
-          next()
-          break
-        case 'DROP':
-          let err = new Error('Forbidden')
-          err.status = 403
-          next(err)
-          break
+          return next()
+        default: // case 'DROP':
+          return next(E403)
       }
-    }).catch(next)
+    } catch (err) {
+      return next(err)
+    }
   }
 }
