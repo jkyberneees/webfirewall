@@ -10,34 +10,34 @@ npm install --save webfirewall
 The values on the params 'paths', 'ipAddresses', 'roles', 'origin' and 'users', can be regular expressions (RegExp). If strings, the comparison is done using the [wildcard](https://www.npmjs.com/package/wildcard) module. 
 ```js
 const config = {
-    populationStrategy: 'restify', // supported values: express/restify or object
-    defaultAction: 'DROP', // supported values: ACCEPT/DROP 
-    getUserPhone: (req) => Promise.resolve(req.user ? req.user.phone: null), // custom population strategy for user phone (optional)
-    getUserEmail: (req) => Promise.resolve(req.user ? req.user.email: null), // custom population strategy for user email (optional)
-    getUserRoles: (req) => Promise.resolve(req.user ? req.user.roles: null), // custom population strategy for user roles (optional)
-    rules: [{
-        methods: ['GET'],
-        paths: ['/system/login'],
-        ipAddresses: ['*'], // optional
-        roles: ['*'], // optional
-        origin: ['*'], // optional
-        users: ['*'], // optional
-        secure: true, // optional
-        action: 'ACCEPT', // supported values: ACCEPT/DROP
-        handler: (req) => Promise.resolve(true) // optional
-    }, {
-        methods: ['POST'],
-        paths: ['/comments'],
-        users: ['*'], 
-        secure: true,
-        action: 'ACCEPT'
-    }, {
-        methods: ['POST'],
-        paths: ['/system/restart'],
-        roles: ['ADMIN'], 
-        secure: true,
-        action: 'ACCEPT'
-    }]
+  populationStrategy: 'restify', // supported values: express/restify or object
+  defaultAction: 'DROP', // supported values: ACCEPT/DROP
+  getUserPhone: (req) => Promise.resolve(req.user ? req.user.phone : null), // custom population strategy for user phone (optional)
+  getUserEmail: (req) => Promise.resolve(req.user ? req.user.email : null), // custom population strategy for user email (optional)
+  getUserRoles: (req) => Promise.resolve(req.user ? req.user.roles : null), // custom population strategy for user roles (optional)
+  rules: [{
+    methods: ['GET'],
+    paths: ['/system/login'],
+    ipAddresses: ['*'], // optional
+    roles: ['*'], // optional
+    origin: ['*'], // optional
+    users: ['*'], // optional
+    secure: true, // optional
+    action: 'ACCEPT', // supported values: ACCEPT/DROP
+    handler: (req) => Promise.resolve(true) // optional
+  }, {
+    methods: ['POST'],
+    paths: ['/comments'],
+    users: ['*'],
+    secure: true,
+    action: 'ACCEPT'
+  }, {
+    methods: ['POST'],
+    paths: ['/system/restart'],
+    roles: ['ADMIN'],
+    secure: true,
+    action: 'ACCEPT'
+  }]
 }
 ```
 
