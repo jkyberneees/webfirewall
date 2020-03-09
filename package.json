@@ -1,6 +1,6 @@
 {
   "name": "webfirewall",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Web firewall compatible with Express/Restify and others...",
   "main": "index.js",
   "scripts": {
@@ -16,7 +16,7 @@
     "authentication"
   ],
   "author": "Rolando Santamaria Maso <kyberneees@gmail.com>",
-  "license": "Apache-2.0",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/jkyberneees/webfirewall/issues"
   },
